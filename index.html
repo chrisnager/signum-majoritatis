@@ -1,93 +1,92 @@
 <!doctype html>
 <html>
-    <head>
-        <title>Dot</title>
-        <style>
-            body {
-                margin: 0;
-                font: 10em/1 monospace;
-                white-space: nowrap;
-            }
-        </style>
-    </head>
-    <body>
-        <script>
-            var sequence = '+_'
-            var obstacle = '^-_'
+  <head>
+    <title>Signum majoritatis</title>
+    <style>html {font: bold 10em \}</style>
+  </head>
+  <body>
+    <pre></pre>
+    <script>
+      var sequence = ' READY GO!'
+      var obstacles = '^-_'
+      var score = -sequence.length
+      var refreshObstacleInterval
 
-            var KeyPressHandler = {
-                down(event) {
-                    if (event.keyCode === 38) {
-                        Player.jump()
-                    } else if (event.keyCode === 40) {
-                        Player.duck()
-                    }
-                },
+      var KeyPressHandler = {
+        down(event) {
+          if (event.keyCode === 38) {
+            Player.jump()
+          } else if (event.keyCode === 40) {
+            Player.duck()
+          }
+        },
 
-                up() {
-                   Player.stand()
-                }
-            }
+        up() {
+           Player.stand()
+        }
+      }
 
-            var Player = {
-                jump: function() {
-                    sequence = '\'' + sequence.substr(1, sequence.length)
-                    render()
-                },
+      var Player = {
+        jump: function() {
+          sequence = '\'' + sequence.substr(1)
+          Game.render()
+        },
 
-                stand: function() {
-                    sequence = '>' + sequence.substr(1, sequence.length)
-                    render()
-                },
+        stand: function() {
+          sequence = '>' + sequence.substr(1)
+          Game.render()
+        },
 
-                duck: function() {
-                    sequence = '.' + sequence.substr(1, sequence.length)
-                    render()
-                },
+        duck: function() {
+          sequence = ',' + sequence.substr(1)
+          Game.render()
+        },
 
-                explode: function() {
-                    sequence = '*' + sequence.substr(1, sequence.length)
-                    render()
-                }
-            }
+        explode: function() {
+          sequence = '* SCORE: ' + score
+          Game.render()
+        }
+      }
 
-            var refreshObstacleInterval = setInterval(setNewObstacle, 1000)
+      var Game = {
+        checkCollision: function(nearestObstacle) {
+          if (
+            (nearestObstacle === obstacles[0] && sequence[0] === '\'')
+            || (nearestObstacle === obstacles[1] && sequence[0] === '>')
+            || (nearestObstacle === obstacles[2] && sequence[0] === ',')
+          ) {
+            Player.explode()
+            clearInterval(refreshObstacleInterval)
+            Game.render()
+          }
+        },
 
-            function setNewObstacle() {
-                sequence = sequence.substr(0, sequence.length - 1) + obstacle[~~(Math.random() * 3)]
-                render()
-            }
+        setNewObstacle: function() {
+          score++
+          Game.increaseSpeed()
+          Game.checkCollision(sequence[1])
+          sequence = sequence [0] + sequence.substr(2) + obstacles[~~(Math.random() * 3)]
+          Game.render()
+        },
 
-            function updateSequence(n) {
-                var previousObstacle = sequence[sequence.length - 1]
+        increaseSpeed: function() {
+          clearInterval(refreshObstacleInterval)
+          refreshObstacleInterval = setInterval(Game.setNewObstacle, 500 - score * 2.5)
+        },
 
-                sequence = sequence.substr(0, sequence.length - n) + previousObstacle + sequence.substr(n, sequence.length - 2) + sequence[sequence.length - 1]
-                render()
-            }
+        render: function() {
+          document.getElementsByTagName('pre')[0].textContent = sequence
+        },
 
-            function checkCollision() {
-                if (
-                    (sequence[1] === '_' && sequence[0] === '.') ||
-                    (sequence[1] === '-' && sequence[0] === '>') ||
-                    (sequence[1] === '^' && sequence[0] === '\'')
-                ) {
-                    Player.explode()
-                    sequence = sequence[0] + 'Game over'
-                    clearInterval(refreshObstacleInterval)
-                    render()
-                }
-            }
+        initialize: function() {
+          window.addEventListener('keydown', KeyPressHandler.down, true)
+          window.addEventListener('keyup', KeyPressHandler.up, true)
+          refreshObstacleInterval = setInterval(Game.setNewObstacle, 500)
+          Player.stand()
+        }
+      }
 
-            function render() {
-                document.body.textContent = sequence
-                console.log(sequence)
-                checkCollision()
-            }
-
-            window.addEventListener('keydown', KeyPressHandler.down, true)
-            window.addEventListener('keyup', KeyPressHandler.up, true)
-
-            Player.stand()
-        </script>
-    </body>
+      Game.initialize()
+    </script>
+  </body>
 </html>
