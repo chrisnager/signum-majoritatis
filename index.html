@@ -2,12 +2,17 @@
 <html>
   <head>
     <title>Signum majoritatis</title>
-    <style>html {font: bold 10em \}</style>
+    <style>
+      html {
+        font: bold 6em monospace;
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
     <pre></pre>
     <script>
-      var sequence = ' READY GO!'
+      var sequence = ' GO UP & DOWN'
       var obstacles = '^-_'
       var score = -sequence.length
       var refreshObstacleInterval
@@ -71,7 +76,7 @@
 
         increaseSpeed: function() {
           clearInterval(refreshObstacleInterval)
-          refreshObstacleInterval = setInterval(Game.setNewObstacle, 500 - score * 2.5)
+          refreshObstacleInterval = setInterval(Game.setNewObstacle, 500 - score * 2)
         },
 
         render: function() {
