@@ -1,10 +1,11 @@
 <!doctype html>
 <html>
   <head>
-    <title>Signum majoritatis</title>
+    <title>> Signum majoritatis</title>
     <style>
-      html {
-        font: bold 6em monospace;
+      pre {
+        font-weight: bold;
+        font-size: 6em;
         text-align: center;
       }
     </style>
@@ -13,8 +14,9 @@
     <pre></pre>
     <script>
       var sequence = ' GO UP & DOWN'
+      var originalSequenceLength = sequence.length
       var obstacles = '^-_'
-      var score = -sequence.length
+      var score = -originalSequenceLength
       var refreshObstacleInterval
 
       var KeyPressHandler = {
@@ -48,12 +50,23 @@
         },
 
         explode: function() {
-          sequence = '* SCORE: ' + score
+          var padding = ['', ' ', '  ', '   ']
+          var endingSequence = '* SCORE: '
+
+          sequence = endingSequence + score + padding[originalSequenceLength - endingSequence.length - ('' + score).length]
           Game.render()
         }
       }
 
       var Game = {
+        clearObstacleInterval: function() {
+          clearInterval(refreshObstacleInterval)
+        },
+
+        render: function() {
+          document.getElementsByTagName('pre')[0].textContent = sequence
+        },
+
         checkCollision: function(nearestObstacle) {
           if (
             (nearestObstacle === obstacles[0] && sequence[0] === '\'')
@@ -61,31 +74,35 @@
             || (nearestObstacle === obstacles[2] && sequence[0] === ',')
           ) {
             Player.explode()
-            clearInterval(refreshObstacleInterval)
+            Game.clearObstacleInterval()
             Game.render()
           }
         },
 
-        setNewObstacle: function() {
+        incrementScore: function() {
           score++
+        },
+
+        increaseSpeed: function() {
+          Game.clearObstacleInterval()
+          refreshObstacleInterval = setInterval(Game.setNewObstacle, 500 - score * 2)
+        },
+
+        setNewObstacle: function() {
+          Game.incrementScore()
           Game.increaseSpeed()
           Game.checkCollision(sequence[1])
           sequence = sequence [0] + sequence.substr(2) + obstacles[~~(Math.random() * 3)]
           Game.render()
         },
 
-        increaseSpeed: function() {
-          clearInterval(refreshObstacleInterval)
-          refreshObstacleInterval = setInterval(Game.setNewObstacle, 500 - score * 2)
-        },
-
-        render: function() {
-          document.getElementsByTagName('pre')[0].textContent = sequence
+        setEventListeners: function() {
+          window.addEventListener('keydown', KeyPressHandler.down, true)
+          window.addEventListener('keyup', KeyPressHandler.up, true)
         },
 
         initialize: function() {
-          window.addEventListener('keydown', KeyPressHandler.down, true)
-          window.addEventListener('keyup', KeyPressHandler.up, true)
+          Game.setEventListeners()
           refreshObstacleInterval = setInterval(Game.setNewObstacle, 500)
           Player.stand()
         }
